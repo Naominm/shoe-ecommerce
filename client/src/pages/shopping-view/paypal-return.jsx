@@ -1,33 +1,27 @@
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { verifySTKPayment } from "@/store/shop/order-slice"; // Import the right function to verify payment
-import { useEffect } from "react";
-import { useDispatch } from "react-redux";
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { verifySTKPayment } from "@/store/shop/order-slice"; // Adjust the path as necessary
 
-function STKReturnPage() { // Renamed to reflect STK Push
+const PaypalReturn = ({ transactionId }) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const orderId = JSON.parse(sessionStorage.getItem("currentOrderId"));
-    if (orderId) {
-      // Assuming you have an API endpoint to verify STK payment status
-      dispatch(verifySTKPayment(orderId)).then((data) => {
-        if (data?.payload?.success) {
-          sessionStorage.removeItem("currentOrderId");
-          window.location.href = "/shop/payment-success"; // Redirect on successful payment
-        } else {
-          window.location.href = "/shop/payment-failure"; // Handle payment failure
-        }
-      });
+    const verifyPayment = async () => {
+      const result = await dispatch(verifySTKPayment(transactionId));
+      // Handle the result here (e.g., show success/failure message)
+      if (result.payload.success) {
+        console.log("Payment verified successfully:", result.payload);
+      } else {
+        console.error("Payment verification failed:", result.payload);
+      }
+    };
+
+    if (transactionId) {
+      verifyPayment();
     }
-  }, [dispatch]);
+  }, [transactionId, dispatch]);
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Processing STK Payment... Please wait!</CardTitle>
-      </CardHeader>
-    </Card>
-  );
-}
+  return <div>Payment Verification in progress...</div>;
+};
 
-export default STKReturnPage;
+export default PaypalReturn;

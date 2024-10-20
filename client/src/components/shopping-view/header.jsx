@@ -156,8 +156,8 @@
       <header className="sticky top-0 z-40 w-full  bg-background">
         <div className="flex h-16 items-center justify-between px-4 md:px-6">
           <Link to="/shop/home" className="flex items-center gap-2">
-            <img src={shoeImage} alt="Home" className="h-6 w-6" />
-            <span className="font-bold text-[#FC7106]">Kanyoni's collection</span>
+            <img src={shoeImage} alt="Home" className="h-9 w-9" />
+            <span className="font-bold text-[12px] text-[#FC7106]">Kanyoni's collection</span>
           </Link>
           <Sheet>
             <SheetTrigger asChild>
