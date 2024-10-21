@@ -1,5 +1,4 @@
 const express = require("express");
-
 const {
   addFeatureImage,
   getFeatureImages,
@@ -8,8 +7,13 @@ const {
 
 const router = express.Router();
 
+// Route to add a feature image
 router.post("/add", addFeatureImage);
-router.get("/get", getFeatureImages);
-router.delete("/delete/:id", deleteFeatureImage); // Add the delete route
 
-module.exports = router;
+// Route to get all feature images
+router.get("/get", getFeatureImages);
+
+// Route to delete a feature image by ID
+router.delete("/delete/:id", deleteFeatureImage); // Use the delete route
+
+module.exports = router; // Export the router

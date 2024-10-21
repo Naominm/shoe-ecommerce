@@ -1,4 +1,3 @@
-// helpers/cloudinary.js
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 require("dotenv").config(); // Load environment variables from .env file
@@ -14,4 +13,15 @@ cloudinary.config({
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-module.exports = { upload };
+// Function to upload image to Cloudinary
+const imageUploadUtil = async (imageBase64) => {
+  try {
+    const result = await cloudinary.uploader.upload(imageBase64);
+    return result;
+  } catch (error) {
+    console.error("Cloudinary upload error:", error);
+    throw new Error("Cloudinary upload failed");
+  }
+};
+
+module.exports = { upload, imageUploadUtil };
