@@ -7,9 +7,9 @@ const initialState = {
   user: null,
 };
 
+// Register User
 export const registerUser = createAsyncThunk(
-  "/auth/register",
-
+  "auth/register",
   async (formData) => {
     const response = await axios.post(
       "http://localhost:5000/api/auth/register",
@@ -18,14 +18,13 @@ export const registerUser = createAsyncThunk(
         withCredentials: true,
       }
     );
-
     return response.data;
   }
 );
 
+// Login User
 export const loginUser = createAsyncThunk(
-  "/auth/login",
-
+  "auth/login",
   async (formData) => {
     const response = await axios.post(
       "http://localhost:5000/api/auth/login",
@@ -34,14 +33,13 @@ export const loginUser = createAsyncThunk(
         withCredentials: true,
       }
     );
-
     return response.data;
   }
 );
 
+// Logout User
 export const logoutUser = createAsyncThunk(
-  "/auth/logout",
-
+  "auth/logout",
   async () => {
     const response = await axios.post(
       "http://localhost:5000/api/auth/logout",
@@ -50,35 +48,43 @@ export const logoutUser = createAsyncThunk(
         withCredentials: true,
       }
     );
-
     return response.data;
   }
 );
 
+// Check Authentication
 export const checkAuth = createAsyncThunk(
-  "/auth/checkauth",
-
+  "auth/checkAuth",
   async () => {
     const response = await axios.get(
       "http://localhost:5000/api/auth/check-auth",
       {
         withCredentials: true,
         headers: {
-          "Cache-Control":
-            "no-store, no-cache, must-revalidate, proxy-revalidate",
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
         },
       }
     );
-
     return response.data;
   }
 );
 
+// Helper function to handle rejected cases
+const handleRejected = (state) => {
+  state.isLoading = false;
+  state.user = null;
+  state.isAuthenticated = false;
+};
+
+// Auth Slice
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setUser: (state, action) => {},
+    setUser: (state, action) => {
+      state.user = action.payload; // Update user state
+      state.isAuthenticated = Boolean(action.payload); // Update authentication status
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -90,26 +96,16 @@ const authSlice = createSlice({
         state.user = null;
         state.isAuthenticated = false;
       })
-      .addCase(registerUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.user = null;
-        state.isAuthenticated = false;
-      })
+      .addCase(registerUser.rejected, handleRejected) // Use helper function
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        console.log(action);
-
         state.isLoading = false;
         state.user = action.payload.success ? action.payload.user : null;
         state.isAuthenticated = action.payload.success;
       })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.user = null;
-        state.isAuthenticated = false;
-      })
+      .addCase(loginUser.rejected, handleRejected) // Use helper function
       .addCase(checkAuth.pending, (state) => {
         state.isLoading = true;
       })
@@ -118,12 +114,8 @@ const authSlice = createSlice({
         state.user = action.payload.success ? action.payload.user : null;
         state.isAuthenticated = action.payload.success;
       })
-      .addCase(checkAuth.rejected, (state, action) => {
-        state.isLoading = false;
-        state.user = null;
-        state.isAuthenticated = false;
-      })
-      .addCase(logoutUser.fulfilled, (state, action) => {
+      .addCase(checkAuth.rejected, handleRejected) // Use helper function
+      .addCase(logoutUser.fulfilled, (state) => {
         state.isLoading = false;
         state.user = null;
         state.isAuthenticated = false;
