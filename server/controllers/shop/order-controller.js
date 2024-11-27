@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 const mpesa = require("../../helpers/mpesa"); // Helper for M-Pesa integration
+=======
+const paypal = require("../../helpers/mpesa");
+>>>>>>> origin/master
 const Order = require("../../models/Order");
 const Cart = require("../../models/Cart");
 const Product = require("../../models/Product");

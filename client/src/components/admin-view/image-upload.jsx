@@ -18,14 +18,29 @@ function ProductImageUpload({
 }) {
   const inputRef = useRef(null);
 
-  console.log(isEditMode, "isEditMode");
+  // Validate the selected file
+  function validateFile(selectedFile) {
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    if (!allowedTypes.includes(selectedFile.type)) {
+      alert("Please upload a valid image file (JPEG, PNG, GIF).");
+      return false;
+    }
+
+    if (selectedFile.size > maxSize) {
+      alert("File size exceeds the limit of 5MB.");
+      return false;
+    }
+
+    return true;
+  }
 
   function handleImageFileChange(event) {
-    console.log(event.target.files, "event.target.files");
     const selectedFile = event.target.files?.[0];
-    console.log(selectedFile);
-
-    if (selectedFile) setImageFile(selectedFile);
+    if (selectedFile && validateFile(selectedFile)) {
+      setImageFile(selectedFile);
+    }
   }
 
   function handleDragOver(event) {
@@ -35,7 +50,9 @@ function ProductImageUpload({
   function handleDrop(event) {
     event.preventDefault();
     const droppedFile = event.dataTransfer.files?.[0];
-    if (droppedFile) setImageFile(droppedFile);
+    if (droppedFile && validateFile(droppedFile)) {
+      setImageFile(droppedFile);
+    }
   }
 
   function handleRemoveImage() {
@@ -50,31 +67,35 @@ function ProductImageUpload({
 
     setImageLoadingState(true);
     const data = new FormData();
-    data.append("my_file", imageFile);
+    data.append("my_file", imageFile); // Ensure this matches the name used in multer
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/admin/products/upload-image",
-        data
+        "http://localhost:5000/api/admin/products/upload-image", // Make sure this matches your Express route
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
-      console.log(response, "response");
 
       if (response?.data?.success) {
         setUploadedImageUrl(response.data.result.url);
       } else {
-        // Handle the case when the upload was unsuccessful
         console.error("Image upload failed:", response?.data?.message);
+        alert(`Image upload failed: ${response.data.message || "Unknown error"}`);
       }
     } catch (error) {
-      // Handle errors during the upload process
       console.error("Error uploading image:", error);
+      alert(`Error uploading image: ${error.response?.data?.message || error.message || "An unknown error occurred"}`);
     } finally {
       setImageLoadingState(false);
     }
   }
 
   useEffect(() => {
-    if (imageFile !== null) {
+    if (imageFile) {
       uploadImageToCloudinary();
     }
   }, [imageFile]);
@@ -109,8 +130,8 @@ function ProductImageUpload({
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <FileIcon className="w-8 text-primary mr-2 h-8" />
+              <p className="text-sm font-medium">{imageFile.name}</p>
             </div>
-            <p className="text-sm font-medium">{imageFile.name}</p>
             <Button
               variant="ghost"
               size="icon"
