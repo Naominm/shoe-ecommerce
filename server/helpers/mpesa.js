@@ -1,5 +1,5 @@
 const axios = require('axios');
-require('dotenv').config(); // Ensure you have a .env file with required keys
+require('dotenv').config(); // Load environment variables from .env file
 
 // M-Pesa Configuration
 const mpesaConfig = {
@@ -7,7 +7,7 @@ const mpesaConfig = {
   consumerSecret: process.env.MPESA_CONSUMER_SECRET,
   shortcode: process.env.MPESA_SHORTCODE,
   passkey: process.env.MPESA_PASSKEY,
-  environment: process.env.MPESA_ENVIRONMENT || 'sandbox', // Choose 'sandbox' or 'production'
+  environment: process.env.MPESA_ENVIRONMENT || 'sandbox', // 'sandbox' or 'production'
   baseURL: process.env.MPESA_BASE_URL || 'https://sandbox.safaricom.co.ke', // Base URL based on environment
 };
 
@@ -16,12 +16,14 @@ async function getAccessToken() {
   const auth = Buffer.from(`${mpesaConfig.consumerKey}:${mpesaConfig.consumerSecret}`).toString('base64');
 
   try {
+    console.log('Requesting access token...');
     const response = await axios.get(`${mpesaConfig.baseURL}/oauth/v1/generate?grant_type=client_credentials`, {
       headers: {
         Authorization: `Basic ${auth}`,
       },
     });
-    console.log('Access Token:', response.data.access_token); // Log for debugging
+
+    console.log('Access Token:', response.data.access_token); // Log the access token
     return response.data.access_token;
   } catch (error) {
     console.error('Error getting access token:', error.response ? error.response.data : error.message);
@@ -50,11 +52,14 @@ async function stkPush(amount, phoneNumber) {
   };
 
   try {
+    console.log('Initiating STK Push...');
+    console.log('Request Data:', requestData); // Log request data for debugging
     const response = await axios.post(`${mpesaConfig.baseURL}/mpesa/stkpush/v1/processrequest`, requestData, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+
     console.log('STK Push Response:', response.data); // Log the API response
     return response.data;
   } catch (error) {
@@ -67,7 +72,7 @@ async function stkPush(amount, phoneNumber) {
 (async () => {
   try {
     const amount = 1000; // Amount to be paid
-    const phoneNumber = '2547XXXXXXXX'; // Customer's phone number in international format
+    const phoneNumber = '254708374149'; // Use a test number in sandbox
 
     const response = await stkPush(amount, phoneNumber);
     console.log('STK Push Successful:', response);

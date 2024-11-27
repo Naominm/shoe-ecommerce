@@ -1,4 +1,4 @@
-const paypal = require("../../helpers/paypal");
+const mpesa = require("../../helpers/mpesa"); // Helper for M-Pesa integration
 const Order = require("../../models/Order");
 const Cart = require("../../models/Cart");
 const Product = require("../../models/Product");
@@ -9,88 +9,56 @@ const createOrder = async (req, res) => {
       userId,
       cartItems,
       addressInfo,
+      orderStatus = "pending",
+      paymentMethod = "mpesa",
+      paymentStatus = "pending",
+      totalAmount,
+      orderDate,
+      orderUpdateDate,
+      cartId,
+      phoneNumber, // Customer's phone number for M-Pesa payment
+    } = req.body;
+
+    // Initiate M-Pesa STK Push (replace Paypal logic)
+    const stkResponse = await mpesa.stkPush(totalAmount, phoneNumber);
+
+    if (!stkResponse || stkResponse.errorCode) {
+      return res.status(500).json({
+        success: false,
+        message: stkResponse.errorMessage || "Error initiating M-Pesa payment",
+      });
+    }
+
+    // Create a new order in the database
+    const newlyCreatedOrder = new Order({
+      userId,
+      cartId,
+      cartItems,
+      addressInfo,
       orderStatus,
       paymentMethod,
       paymentStatus,
       totalAmount,
       orderDate,
       orderUpdateDate,
-      paymentId,
-      payerId,
-      cartId,
-    } = req.body;
+      checkoutRequestId: stkResponse.CheckoutRequestID, // M-Pesa CheckoutRequestID
+    });
 
-    const create_payment_json = {
-      intent: "sale",
-      payer: {
-        payment_method: "paypal",
-      },
-      redirect_urls: {
-        return_url: "http://localhost:5173/shop/paypal-return",
-        cancel_url: "http://localhost:5173/shop/paypal-cancel",
-      },
-      transactions: [
-        {
-          item_list: {
-            items: cartItems.map((item) => ({
-              name: item.title,
-              sku: item.productId,
-              price: item.price.toFixed(2),
-              currency: "USD",
-              quantity: item.quantity,
-            })),
-          },
-          amount: {
-            currency: "USD",
-            total: totalAmount.toFixed(2),
-          },
-          description: "description",
-        },
-      ],
-    };
+    await newlyCreatedOrder.save();
 
-    paypal.payment.create(create_payment_json, async (error, paymentInfo) => {
-      if (error) {
-        console.log(error);
+    // Redirect user to M-Pesa payment link if needed, otherwise handle response accordingly
+    const paymentLink = stkResponse.paymentUrl || ''; // Adjust according to your response structure
 
-        return res.status(500).json({
-          success: false,
-          message: "Error while creating paypal payment",
-        });
-      } else {
-        const newlyCreatedOrder = new Order({
-          userId,
-          cartId,
-          cartItems,
-          addressInfo,
-          orderStatus,
-          paymentMethod,
-          paymentStatus,
-          totalAmount,
-          orderDate,
-          orderUpdateDate,
-          paymentId,
-          payerId,
-        });
-
-        await newlyCreatedOrder.save();
-
-        const approvalURL = paymentInfo.links.find(
-          (link) => link.rel === "approval_url"
-        ).href;
-
-        res.status(201).json({
-          success: true,
-          approvalURL,
-          orderId: newlyCreatedOrder._id,
-        });
-      }
+    res.status(201).json({
+      success: true,
+      paymentLink, // This is where the user is redirected for M-Pesa payment
+      orderId: newlyCreatedOrder._id,
     });
   } catch (e) {
     console.log(e);
     res.status(500).json({
       success: false,
-      message: "Some error occured!",
+      message: "Some error occurred while creating the order",
     });
   }
 };
@@ -104,13 +72,13 @@ const capturePayment = async (req, res) => {
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: "Order can not be found",
+        message: "Order not found",
       });
     }
 
     order.paymentStatus = "paid";
     order.orderStatus = "confirmed";
-    order.paymentId = paymentId;
+    order.paymentId = paymentId; // Payment ID from M-Pesa callback or response
     order.payerId = payerId;
 
     for (let item of order.cartItems) {
@@ -119,17 +87,16 @@ const capturePayment = async (req, res) => {
       if (!product) {
         return res.status(404).json({
           success: false,
-          message: `Not enough stock for this product ${product.title}`,
+          message: `Product ${item.title} not found`,
         });
       }
 
       product.totalStock -= item.quantity;
-
       await product.save();
     }
 
-    const getCartId = order.cartId;
-    await Cart.findByIdAndDelete(getCartId);
+    // Delete cart after successful order payment
+    await Cart.findByIdAndDelete(order.cartId);
 
     await order.save();
 
@@ -142,11 +109,12 @@ const capturePayment = async (req, res) => {
     console.log(e);
     res.status(500).json({
       success: false,
-      message: "Some error occured!",
+      message: "Some error occurred while capturing payment",
     });
   }
 };
 
+// Get All Orders by User
 const getAllOrdersByUser = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -168,11 +136,12 @@ const getAllOrdersByUser = async (req, res) => {
     console.log(e);
     res.status(500).json({
       success: false,
-      message: "Some error occured!",
+      message: "Some error occurred while fetching orders",
     });
   }
 };
 
+// Get Order Details
 const getOrderDetails = async (req, res) => {
   try {
     const { id } = req.params;
@@ -194,7 +163,7 @@ const getOrderDetails = async (req, res) => {
     console.log(e);
     res.status(500).json({
       success: false,
-      message: "Some error occured!",
+      message: "Some error occurred while fetching order details",
     });
   }
 };

@@ -9,6 +9,7 @@ const initialState = {
   orderDetails: null,
 };
 
+// Create a new order
 export const createNewOrder = createAsyncThunk(
   "/order/createNewOrder",
   async (orderData) => {
@@ -16,11 +17,11 @@ export const createNewOrder = createAsyncThunk(
       "http://localhost:5000/api/shop/order/create",
       orderData
     );
-
     return response.data;
   }
 );
 
+// Capture payment for the order
 export const capturePayment = createAsyncThunk(
   "/order/capturePayment",
   async ({ paymentId, payerId, orderId }) => {
@@ -32,29 +33,39 @@ export const capturePayment = createAsyncThunk(
         orderId,
       }
     );
-
     return response.data;
   }
 );
 
+// Get all orders by user ID
 export const getAllOrdersByUserId = createAsyncThunk(
   "/order/getAllOrdersByUserId",
   async (userId) => {
     const response = await axios.get(
       `http://localhost:5000/api/shop/order/list/${userId}`
     );
-
     return response.data;
   }
 );
 
+// Get order details by order ID
 export const getOrderDetails = createAsyncThunk(
   "/order/getOrderDetails",
   async (id) => {
     const response = await axios.get(
       `http://localhost:5000/api/shop/order/details/${id}`
     );
+    return response.data;
+  }
+);
 
+// Verify STK Payment
+export const verifySTKPayment = createAsyncThunk(
+  "/order/verifySTKPayment",
+  async (transactionId) => {
+    const response = await axios.get(
+      `http://localhost:5000/api/shop/payment/verify/${transactionId}`
+    );
     return response.data;
   }
 );
@@ -107,6 +118,17 @@ const shoppingOrderSlice = createSlice({
       .addCase(getOrderDetails.rejected, (state) => {
         state.isLoading = false;
         state.orderDetails = null;
+      })
+      .addCase(verifySTKPayment.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(verifySTKPayment.fulfilled, (state, action) => {
+        state.isLoading = false;
+        // Handle successful payment verification (if necessary)
+      })
+      .addCase(verifySTKPayment.rejected, (state) => {
+        state.isLoading = false;
+        // Handle failed payment verification (if necessary)
       });
   },
 });

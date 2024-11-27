@@ -14,4 +14,6 @@ router.post("/capture", capturePayment);
 router.get("/list/:userId", getAllOrdersByUser);
 router.get("/details/:id", getOrderDetails);
 
+console.log({ createOrder, capturePayment, getAllOrdersByUser, getOrderDetails });
+
 module.exports = router;
