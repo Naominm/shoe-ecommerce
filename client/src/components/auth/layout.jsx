@@ -2,17 +2,18 @@ import { Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 // Import images from the assets folder
-import image1 from '@/assets/image1.jpeg'; // Adjust the path as necessary
-import image2 from '@/assets/images.jpeg'; // Adjust the path as necessary
-import image3 from '@/assets/kids.jpg'; // Adjust the path as necessary
+import image1 from '@/assets/shoe1.jpg'; // Adjust the path as necessary
+import image2 from '@/assets/shoe2.jpg'; // Adjust the path as necessary
+import image3 from '@/assets/shoe3.jpg'; // Adjust the path as necessary
 import icon from '@/assets/logo.png'; // Path to your icon image
-import image6 from '@/assets/adriot.jpeg';
-import image7 from '@/assets/white-sneakers.jpeg';
+import image6 from '@/assets/shoe4.jpg';
+import image7 from '@/assets/shoe5.jpg';
+import image8 from '@/assets/shoe6.jpg';
 
 
 // Create an array of images
 
-const shoeImages = [image1, image2, image3,image6,image7]; // Use the imported images
+const shoeImages = [image1, image2, image3,image6,image7,image8]; // Use the imported images
 
 function AuthLayout() {
   const [currentImage, setCurrentImage] = useState(0);
