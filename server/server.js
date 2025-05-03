@@ -5,7 +5,7 @@ const cors = require("cors");
 const authRouter = require("./routes/auth/auth-routes");
 const adminProductsRouter = require("./routes/admin/products-routes");
 const adminOrderRouter = require("./routes/admin/order-routes");
-// const mpesaRoutes = require('./routes/shop/mpesa-routes');
+
 const shopProductsRouter = require("./routes/shop/products-routes");
 const shopCartRouter = require("./routes/shop/cart-routes");
 const shopAddressRouter = require("./routes/shop/address-routes");
@@ -13,7 +13,7 @@ const shopOrderRouter = require("./routes/shop/order-routes");
 const shopSearchRouter = require("./routes/shop/search-routes");
 const shopReviewRouter = require("./routes/shop/review-routes");
 const commonFeatureRouter = require("./routes/common/feature-routes");
-// const mpesaRoutes = require("./routes/shop/mpesa-routes");
+const mpesaRoutes = require("./routes/shop/mpesa-routes");
 
 // Load environment variables
 require('dotenv').config();
@@ -32,7 +32,7 @@ const PORT = process.env.PORT || 5000;
 
 // CORS configuration
 const corsOptions = {
-  origin: 'http://localhost:5173', // Update to your frontend URL
+  origin: 'http://localhost:5173', 
   methods: ["GET", "POST", "DELETE", "PUT"],
   allowedHeaders: [
     "Content-Type",
@@ -41,25 +41,24 @@ const corsOptions = {
     "Expires",
     "Pragma",
   ],
-  credentials: true, // Enable credentials to be included
+  credentials: true,
 };
 
-app.use(cors(corsOptions)); // Use the specified CORS options
+app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 
-// Register routes
-app.use("/api/auth", authRouter);
-// app.use("/api/mpesa", mpesaRoutes);
-app.use("/api/admin/products", adminProductsRouter);
-app.use("/api/admin/orders", adminOrderRouter);
-app.use("/api/shop/products", shopProductsRouter);
-app.use("/api/shop/cart", shopCartRouter);
-app.use("/api/shop/address", shopAddressRouter);
-app.use("/api/shop/order", shopOrderRouter);
-app.use("/api/shop/search", shopSearchRouter);
-app.use("/api/shop/review", shopReviewRouter);
-app.use("/api/common/feature", commonFeatureRouter);
-// app.use("/api/mpesa", mpesaRoutes);  
+
+app.use("/auth", authRouter);
+app.use("/admin/products", adminProductsRouter);
+app.use("/admin/orders", adminOrderRouter);
+app.use("/shop/products", shopProductsRouter);
+app.use("/shop/cart", shopCartRouter);
+app.use("/shop/address", shopAddressRouter);
+app.use("/shop/order", shopOrderRouter);
+app.use("/shop/search", shopSearchRouter);
+app.use("/shop/review", shopReviewRouter);
+app.use("/common/feature", commonFeatureRouter);
+app.use("/shop/mpesa", mpesaRoutes);  
 
 app.listen(PORT, () => console.log(`Server is now running on port ${PORT}`));

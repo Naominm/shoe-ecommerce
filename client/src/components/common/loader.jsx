@@ -15,7 +15,7 @@ function Loader() {
             cy="12"
             r="10"
             stroke="currentColor"
-            strokeWidth="1.5" // Thinner, more modern stroke width
+            strokeWidth="1.0" // Thinner, more modern stroke width
           ></circle>
           <path
             className="opacity-75"
