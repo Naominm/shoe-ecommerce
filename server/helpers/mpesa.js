@@ -8,7 +8,7 @@ const mpesaConfig = {
   shortcode: process.env.MPESA_SHORTCODE,
   passkey: process.env.MPESA_PASSKEY,
   environment: process.env.MPESA_ENVIRONMENT || 'sandbox', // 'sandbox' or 'production'
-  baseURL: process.env.MPESA_BASE_URL || 'https://sandbox.safaricom.co.ke', // Base URL based on environment
+  baseURL: process.env.MPESA_BASE_URL?.trim()|| 'https://sandbox.safaricom.co.ke', // Base URL based on environment
 };
 
 // Function to get access token from M-Pesa API
@@ -23,7 +23,6 @@ async function getAccessToken() {
       },
     });
 
-    console.log('Access Token:', response.data.access_token); // Log the access token
     return response.data.access_token;
   } catch (error) {
     console.error('Error getting access token:', error.response ? error.response.data : error.message);
@@ -31,48 +30,50 @@ async function getAccessToken() {
   }
 }
 
-// Function to initiate an STK Push (Lipa na M-Pesa)
+
 async function stkPush(amount, phoneNumber) {
   const token = await getAccessToken();
-  const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14); // Format: YYYYMMDDHHMMSS
+  const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14); 
   const password = Buffer.from(`${mpesaConfig.shortcode}${mpesaConfig.passkey}${timestamp}`).toString('base64');
 
   const requestData = {
     BusinessShortCode: mpesaConfig.shortcode,
     Password: password,
     Timestamp: timestamp,
-    TransactionType: 'CustomerPayBillOnline', // Transaction type for PayBill payments
+    TransactionType: 'CustomerPayBillOnline',
     Amount: amount,
-    PartyA: phoneNumber, // Customer's phone number in international format (e.g., 2547XXXXXXXX)
-    PartyB: mpesaConfig.shortcode, // Business shortcode receiving the payment
-    PhoneNumber: phoneNumber, // Same as PartyA
-    CallBackURL: 'https://your-ngrok-url.ngrok.io/mpesa/callback', // Replace with your callback URL
-    AccountReference: 'Order1', // Optional: Use a unique order ID or reference
-    TransactionDesc: 'Payment for Order 1', // Description of the transaction
+    PartyA: phoneNumber,
+    PartyB: mpesaConfig.shortcode,
+    PhoneNumber: phoneNumber,
+    CallBackURL: 'https://4b77-154-158-158-247.ngrok-free.app/mpesa/callback',
+    AccountReference: 'Order1',
+    TransactionDesc: 'Payment for Order 1',
   };
 
   try {
-    console.log('Initiating STK Push...');
-    console.log('Request Data:', requestData); // Log request data for debugging
     const response = await axios.post(`${mpesaConfig.baseURL}/mpesa/stkpush/v1/processrequest`, requestData, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-
-    console.log('STK Push Response:', response.data); // Log the API response
+  
+    console.log('STK Push Response:', response.data); 
     return response.data;
   } catch (error) {
     console.error('Error initiating STK Push:', error.response ? error.response.data : error.message);
+    if (error.response) {
+      console.log('Full Error Response:', error.response);
+    }
     throw new Error('STK Push failed');
   }
+  
 }
 
-// Test the STK Push function
+
 (async () => {
   try {
-    const amount = 1000; // Amount to be paid
-    const phoneNumber = '254708374149'; // Use a test number in sandbox
+    const amount = 10; 
+    const phoneNumber = '254708374149'; 
 
     const response = await stkPush(amount, phoneNumber);
     console.log('STK Push Successful:', response);

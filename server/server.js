@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
@@ -13,7 +14,7 @@ const shopOrderRouter = require("./routes/shop/order-routes");
 const shopSearchRouter = require("./routes/shop/search-routes");
 const shopReviewRouter = require("./routes/shop/review-routes");
 const commonFeatureRouter = require("./routes/common/feature-routes");
-// const mpesaRoutes = require("./routes/shop/mpesa-routes");
+const mpesaRoutes = require("./routes/shop/mpesa-routes");
 
 // Load environment variables
 require('dotenv').config();
@@ -50,7 +51,6 @@ app.use(express.json());
 
 // Register routes
 app.use("/api/auth", authRouter);
-// app.use("/api/mpesa", mpesaRoutes);
 app.use("/api/admin/products", adminProductsRouter);
 app.use("/api/admin/orders", adminOrderRouter);
 app.use("/api/shop/products", shopProductsRouter);
@@ -60,6 +60,6 @@ app.use("/api/shop/order", shopOrderRouter);
 app.use("/api/shop/search", shopSearchRouter);
 app.use("/api/shop/review", shopReviewRouter);
 app.use("/api/common/feature", commonFeatureRouter);
-// app.use("/api/mpesa", mpesaRoutes);  
+app.use("/api/mpesa", mpesaRoutes);  
 
 app.listen(PORT, () => console.log(`Server is now running on port ${PORT}`));
